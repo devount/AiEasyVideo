@@ -16,7 +16,7 @@ def _httpreq(url):
         print ('请确保网络连接正常及网址正确！')
         _sysexit()
 print ('#'.center(30, '#'))
-print ('本程序适用于下载网易云公开课视频\n作者：chiloy@chiloy.com\n如有问题与建议，请与我联系！')
+print ('本程序适用于下载网易公开课视频\n原作者：chiloy@chiloy.com\n多集下载由devount@qq.com增加\n如有问题与建议，请与我联系！')
 print ('#'.center(30, '#'))
 inputurl = input('请输入或复制(ctrl+v)网易云课堂公开课专辑目录网址：')
 reqcontent = bs4.BeautifulSoup(_httpreq(inputurl),"html5lib")
@@ -48,13 +48,11 @@ for index in range(len(urlarr)):
     while (len(downurlarr) == len(urlarr)):
         print ('成功生成视频下载链接')
         break
-print ('即将开始下载工作，请保证D盘有足够的硬盘空间！')
 
-
-downmode= input ('如下载全部视频，请输入 Y，单集请输入集号数字：')
+# 创建保存视频的文件夹，并对操作系统做判断
 savepath = None
 if (platform.system() =="Windows"):
-    savepath = "D:\\AiEasyVideo\\" + splitname[0] + '\\' + splitname[1]
+    savepath = "D:\\AiEasyVideo\\" + splitname[0].strip() + '\\' + splitname[1].strip()
     if(os.path.exists(savepath) == False):
             os.makedirs(savepath)
     savepath = savepath + "\\"
@@ -63,32 +61,73 @@ elif (platform.system() =="Linux"):
     if (os.path.exists(savepath) == False):
             os.makedirs(savepath)
     savepath = savepath +"/"
-if (downmode == 'Y'):
-    for downstep in downurlarr:        # 第二个实例   
-        print ('正在下载第%d集：%s，剩余下载%d集' % (downurlarr.index(downstep) + 1, lesarr[downurlarr.index(downstep)], len(downurlarr) - (downurlarr.index(downstep) + 1)))
-        wget.download(downstep, savepath + lesarr[downurlarr.index(downstep)] + '.mp4')
-    print ('视频下载完成！好好学习！天天向上！')
-elif(0 < int(downmode)< len(downurlarr)):
-    downnumber = int(downmode) - 1
-    print ('请稍后正在下载第%d集：%s' % (int(downmode), lesarr[downnumber]))
-    wget.download(downurlarr[downnumber], savepath  + lesarr[downnumber] +'.mp4')
-    print ('视频下载完成！好好学习！天天向上！')
-    inexit = input ('输入Q退出本程序')
-    while inexit =='Q':
-        print ('感谢使用本程序')
-        sys.exit()
-        
-else:
-    print ('输入值不合法')
-    _sysexit()
 
 
+print("使用方法如下：".center(60,"#"))
+print('默认保存于D:\AiEasyVideo\目录下（如不存在，会自动创建），请保证D盘有足够的硬盘空间！')
+print('如下载全部视频，请输入 Y\n间隔单集请用英文逗号","隔开，如"2,3,4"\n连续集数下载请使用"-"表示首尾集数编号，如"2-6"\n支持混合输入，如"2,3,5-8"')
+# 手动输入下载集数编号，使用Input采集输入
+getinput= input ('请输入你要下载的视频集数编号：')
+# 将输入格式化为列表，便于后续处理
+downmode = getinput.split(",")
 
-
-
-
-
-
-
-
-
+# 判断用户输入的集数编号命令，决定如何下载视频
+if (getinput == 'Y'):#遍历下载链接，下载所有视频
+    for downstep in downurlarr:	
+        print ('\n正在下载第%d集：%s，剩余下载%d集\n' % (downurlarr.index(downstep) + 1, lesarr[downurlarr.index(downstep)], len(downurlarr) - (downurlarr.index(downstep) + 1)))
+        videonum= downurlarr.index(downstep) + 1
+        savename = savepath + "第%s集-"%videonum +lesarr[downurlarr.index(downstep)] + '.mp4'            
+        if(os.path.exists(savename) == False):                 
+            wget.download(downstep, savename)
+        else:
+            print("\n第%d集已存在,将下载下一集！"%(downurlarr.index(downstep) + 1))        
+    print ('\n视频下载完成！好好学习！天天向上！')
+else:    
+    for downindex in downmode:
+        if("-" in downindex): #连续下载
+            start,end = downindex.split("-")            
+            try:
+                start,end = int(start),int(end)
+            except ValueError:
+                print('\n下载编号中除","和"-"外不可出现其他字符，异常编号是%s' % downindex)
+                continue
+            for downnode in range(start,end+1):#取出下载编号的范围，遍历下载
+                try:
+                    downnumber = int(downnode)-1
+                    if(0 < int(downnode) <=len(downurlarr)):#判断下载的集数是否存在
+                        print ('\n正在下载第%d集：%s,请稍后' % (int(downnode), lesarr[downnumber]))
+                        videonum= int(downnode)
+                        savename = savepath + "第%s集-"%videonum + lesarr[downnumber] +'.mp4'            
+                        if(os.path.exists(savename) == False):                 
+                            wget.download(downurlarr[downnumber], savename)
+                        else:
+                            print("\n第%d集已存在,将下载下一集！"%int(downnode))
+                    else:
+                        print("\n第%d集不存在,将下载下一集"%int(downnode))        
+                except KeyboardInterrupt:
+                    print("   取消下载该视频")
+                    continue
+        else:
+            try:
+                downnumber = int(downindex)-1
+                if(0 < int(downindex) <=len(downurlarr)):
+                    print ('\n正在下载第%d集：%s,请稍后' % (int(downindex), lesarr[downnumber]))
+                    videonum= int(downindex)
+                    savename = savepath + "第%s集-"%videonum + lesarr[downnumber] +'.mp4'
+                    if(os.path.exists(savename) == False):                 
+                        wget.download(downurlarr[downnumber], savename)
+                    else:
+                        print("\n第%d集已存在,将下载下一集！"%int(downindex))
+                else:
+                    print("\n第%d集不存在,将下载下一集！"%int(downindex))
+            except ValueError:
+                print('\n下载编号中除","和"-"外不可出现其他字符，异常编号是%s'% downindex)
+                continue
+            except KeyboardInterrupt:
+                print("   取消下载该视频")
+                continue        
+    print ('\n视频下载完成！好好学习！天天向上！'.center(50,"#"))
+inexit = input ('输入Q退出本程序')
+while inexit =='Q':
+    print ('感谢使用本程序')
+    sys.exit()
