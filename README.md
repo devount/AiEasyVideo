@@ -17,7 +17,8 @@
      - 5-8 等使用“-”隔开的编号表示下载这个区间中的视频，包括首尾视频
      - 支持上述两步混合，如 1,2,3,5-9,11,17
 ## 使用二进制exe文件（无需安装python3运行环境）
- 1. 在release中下载exe文件
+ 1. 在https://github.com/devount/AiEasyVideo/releases/download/1.0/AiEasyVideo.exe
+ 中下载exe文件
  2. 双击运行，其他操作与源代码方式相同
  
 - 如有问题与建议，请与我联系！
